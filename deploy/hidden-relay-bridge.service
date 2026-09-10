@@ -1,0 +1,42 @@
+[Unit]
+Description=Hidden relay bridge (nostr kind 27901 rendez-vous bridge)
+Documentation=https://github.com/paulle0/hidden_relay_bridge_python
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hiddenrelay
+Group=hiddenrelay
+WorkingDirectory=/opt/hidden-relay-bridge
+ExecStart=/opt/hidden-relay-bridge/venv/bin/hidden-relay-bridge run --config /etc/hidden-relay-bridge/config.toml
+Restart=always
+RestartSec=5
+# Give up on restart loops only if it fails constantly for 5 minutes.
+StartLimitIntervalSec=300
+StartLimitBurst=20
+
+# Logs go to the journal: journalctl -u hidden-relay-bridge -f
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hidden-relay-bridge
+
+# Hardening. The bridge only needs outbound network and its own config.
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+ReadOnlyPaths=/etc/hidden-relay-bridge
+# Uncomment if you set [logging].file to somewhere under /var/log.
+# ReadWritePaths=/var/log/hidden-relay-bridge
+
+[Install]
+WantedBy=multi-user.target

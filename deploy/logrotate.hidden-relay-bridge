@@ -1,0 +1,11 @@
+# Only needed when [logging].file is set. Under systemd the journal handles
+# rotation for you and this file can be ignored.
+/var/log/hidden-relay-bridge/*.log {
+    weekly
+    rotate 8
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+}

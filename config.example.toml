@@ -1,0 +1,81 @@
+# hidden-relay-bridge configuration
+#
+# Copy to config.toml (or /etc/hidden-relay-bridge/config.toml), fill in the
+# secret key and the whitelist, then run:  hidden-relay-bridge check
+
+[bridge]
+# The identity of the hidden relay. Generate one with: hidden-relay-bridge keygen
+# Accepts an nsec or 64 character hex. Prefer secret_key_file on a shared box.
+secret_key = "nsec1replace_me_with_the_output_of_keygen"
+# secret_key_file = "/etc/hidden-relay-bridge/bridge.nsec"   # chmod 0600
+# The HIDDEN_RELAY_BRIDGE_SECRET_KEY environment variable also works.
+name = "home-relay"
+
+[local_relay]
+# The relay that is only reachable on your LAN.
+url = "ws://192.168.11.26:7000"
+connect_timeout_seconds = 10
+# Answer a NIP-42 AUTH challenge from the local relay with the bridge identity.
+# Leave this false to pass AUTH through to the client instead.
+auth = false
+# Read the local relay's NIP-11 document and announce it in the kind 10113 event.
+fetch_nip11 = true
+# nip11_url = "http://192.168.11.26:7000"   # derived from url when empty
+max_message_bytes = 2097152
+
+[rendezvous]
+# Public relays where clients drop kind 27901 requests and pick up responses.
+relays = ["wss://relay.napttr.eu"]
+# Answer NIP-42 AUTH challenges from the rendez-vous relays.
+auth = true
+# Publish the kind 10112 (rendez-vous list) and 10113 (relay info) events.
+publish_announcements = true
+announce_interval_seconds = 3600
+# Ignore requests whose created_at is too far from now (replay protection).
+max_event_age_seconds = 120
+max_event_future_seconds = 120
+subscribe_since_slack_seconds = 60
+
+[access]
+# Only these pubkeys may use the bridge. npub or hex, both accepted.
+allowed_pubkeys = [
+  # "npub1yourclientkey...",
+]
+# Set to true to serve everyone. Only sensible while testing.
+allow_all = false
+
+[limits]
+# Maximum plaintext size of one kind 27901 payload, before encryption.
+# The encrypted content ends up roughly 4/3 of this, so keep headroom under
+# whatever event size your rendez-vous relay accepts. Hard ceiling: 65535.
+max_payload_bytes = 32768
+# How long to wait for more messages before sending a batch. 0 disables batching.
+flush_delay_ms = 40
+max_messages_per_event = 64
+# Concurrent client sessions; the idlest is evicted when the limit is reached.
+max_sessions = 32
+max_subscriptions_per_client = 20
+session_idle_timeout_seconds = 600
+# Inbound kind 27901 events per pubkey per minute. 0 disables the limit.
+inbound_events_per_minute = 600
+
+[crypto]
+# auto | builtin | nostr-sdk
+#   auto       prefers nostr-sdk when it is installed
+#   builtin    coincurve + cryptography (lightest install on a Pi)
+#   nostr-sdk  the rust-nostr bindings
+backend = "auto"
+encryption = "nip44_v2"
+
+[logging]
+level = "INFO"
+# Empty means stderr, which is what you want under systemd.
+file = ""
+
+[nip11]
+# Fields merged over the local relay's own NIP-11 document for kind 10113.
+enabled = true
+name = "hidden home relay"
+description = "A nostr relay on my LAN, reachable through a rendez-vous point."
+# contact = "npub1..."
+# limitation = { auth_required = false, payment_required = false }

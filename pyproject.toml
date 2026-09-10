@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hidden-relay-bridge"
+version = "0.1.0"
+description = "Expose a local nostr relay as a hidden relay over public rendez-vous relays"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "paulle0" }]
+keywords = ["nostr", "relay", "nip", "bridge", "nip-44"]
+classifiers = [
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Communications",
+  "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+  "websockets>=12.0",
+  "coincurve>=18.0.0",
+  "cryptography>=42.0.0",
+]
+
+[project.optional-dependencies]
+# Swap the crypto backend for the rust-nostr bindings.
+sdk = ["nostr-sdk>=0.36"]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
+
+[project.scripts]
+hidden-relay-bridge = "hidden_relay_bridge.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/paulle0/hidden_relay_bridge_python"
+Specification = "https://github.com/paulle0/hidden_relay_nip"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = ["error::DeprecationWarning:hidden_relay_bridge.*"]
